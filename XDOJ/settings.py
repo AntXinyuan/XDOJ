@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from XDOJ import secret_info
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -20,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '+j!3lz)9n1bso-r2-08q-gy2s#wgnae!my%p$ux5@rg^$na%3r'
+SECRET_KEY = secret_info.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -148,8 +150,8 @@ AUTH_USER_MODEL = 'account.User'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.163.com'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = 'ant_xinyuan@163.com'
-EMAIL_HOST_PASSWORD = 'JMMNTGPKAJAAFCZW'
+EMAIL_HOST_USER = secret_info.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = secret_info.EMAIL_HOST_PASSWORD
 CONFIRM_DAYS = 1
 
 
