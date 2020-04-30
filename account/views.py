@@ -10,15 +10,31 @@ from rest_framework import status, generics, permissions, renderers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from account.models import User, ConfirmString
-from account.serializers import UserAdminSerializer, UserSerializer, RegisterSerializer
+from account.models import User, ConfirmString, Profile
+from account.serializers import UserAdminSerializer, UserSerializer, RegisterSerializer, ProfileSerializer
 from XDOJ import utils
+
+
+class IsOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj == request.user
+
+
+class IsUserselfOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return (request.method in permissions.SAFE_METHODS) or obj.user == request.user
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserAdminSerializer
     permission_classes = [permissions.IsAdminUser]
+
+
+class ProfileAPI(generics.RetrieveUpdateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [IsUserselfOrReadOnly]
 
 
 class RegisterAPI(generics.CreateAPIView):
@@ -28,7 +44,7 @@ class RegisterAPI(generics.CreateAPIView):
 
 class RegisterConfirmAPI(generics.GenericAPIView):
     def get(self, request):
-        code = request.data['code']
+        code = request.GET['code']
         confirm = get_object_or_404(queryset=ConfirmString.objects.all(), code=code)
         now = datetime.datetime.now()
         if now > confirm.create_time + datetime.timedelta(settings.CONFIRM_DAYS):
@@ -43,8 +59,8 @@ class RegisterConfirmAPI(generics.GenericAPIView):
 
 class LoginAPI(generics.GenericAPIView):
     def put(self, request):
-        if request.user.is_authenticated:
-            return JsonResponse(utils.response_dict(message='你已经登陆过了！', data=UserSerializer(request.user)))
+        # if request.user.is_authenticated:
+        #    return JsonResponse(utils.response_dict(message='你已经登陆过了！', data=UserSerializer(request.user)))
         username = request.data['username']
         password = request.data['password']
         user = authenticate(username=username, password=password)
@@ -66,7 +82,7 @@ class LogoutAPI(generics.GenericAPIView):
 
 
 class ChangePasswordAPI(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsOwner]
 
     def put(self, request):
         old_password = request.data['old_password']

@@ -2,7 +2,7 @@
 from rest_framework import serializers
 
 from XDOJ import utils, settings
-from account.models import User
+from account.models import User, Profile
 
 
 class UserAdminSerializer(serializers.HyperlinkedModelSerializer):
@@ -11,10 +11,22 @@ class UserAdminSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['url', 'id', 'username', 'password', 'email', 'head_img', 'role']
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+    accepted_number = serializers.ReadOnlyField()
+    submission_number = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Profile
+        fields = '__all__'
+
+
 class UserSerializer(serializers.ModelSerializer):
+    #profile = serializers.HyperlinkedRelatedField(view_name='profile-detail', read_only=True)
+    # TODO profile超链接bug待修复
     class Meta:
         model = User
-        fields = ['id', 'username']
+        fields = ['id', 'username', 'profile']
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -24,15 +36,16 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
-        user.set_password(validated_data['password'])
-        user.save()
         send_confirm_email(to_user=user, code=user.make_confirm_string())
         return user
 
 
 def send_confirm_email(to_user, code):
+    # TODO 需要改为异步发送
 
     from django.core.mail import EmailMultiAlternatives
+
+    code = code.replace('+', '%2B')
 
     subject = 'XDOJ注册确认邮件'
 

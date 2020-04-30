@@ -38,7 +38,7 @@ class Problem(models.Model):
     # ["c++", "java", "python"]
     languages = JSONField(verbose_name='编程语言')
     tags = models.ManyToManyField(to=ProblemTag, verbose_name='标签', related_name='problems',
-                                  db_table='problem_tag_problem', blank=True, null=True)
+                                  db_table='problem_tag_problem', blank=True)
 
     is_public = models.BooleanField('是否公开', default=True)
     visible = models.BooleanField('是否可见', default=True)

@@ -1,6 +1,6 @@
 import datetime
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 import account
 from django.utils.translation import gettext_lazy as _
@@ -11,11 +11,30 @@ class Role(models.TextChoices):
     ORDINARY = 'Ordinary', _('普通用户')
 
 
+class MyUserManager(UserManager):
+    def create(self, **kwargs):
+        user = super().create(**kwargs)
+        user.set_password(user.password)
+        user.save()
+        Profile.objects.create(user=user)
+        return user
+
+    def update(self, **kwargs):
+        user = super().update(**kwargs)
+        if kwargs.get('password', None):
+            raw_password = kwargs['password']
+            user.set_password(raw_password)
+            user.save()
+        return user
+
+
 class User(AbstractUser):
     role = models.TextField(choices=Role.choices, default=Role.ORDINARY)
     head_img = models.ImageField('头像', upload_to='head_img', default='/head_img/default.jpg')
     create_time = models.DateTimeField("创建时间", auto_now_add=True)
     is_confirmed = models.BooleanField('是否激活', default=False)
+
+    objects = MyUserManager()
 
     class Meta:
         ordering = ['date_joined']
@@ -53,3 +72,18 @@ class ConfirmString(models.Model):
         ordering = ["-create_time"]
         verbose_name = "确认码"
         verbose_name_plural = "确认码"
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(to=User, related_name='profile', on_delete=models.CASCADE)
+    real_name = models.TextField(null=True)
+    blog = models.URLField(null=True)
+    github = models.URLField(null=True)
+    school = models.TextField(null=True)
+    major = models.TextField(null=True)
+    accepted_number = models.IntegerField(default=0)
+    submission_number = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name = '个人主页'
+        verbose_name_plural = '个人主页'

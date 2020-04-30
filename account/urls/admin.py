@@ -6,6 +6,7 @@ router = DefaultRouter()
 router.register('', views.UserViewSet)
 
 urlpatterns = [
+    path('profile/<int:pk>/', views.ProfileAPI.as_view(), name='admin_profile-detail'),
     path('', include(router.urls)),
 ]
 
