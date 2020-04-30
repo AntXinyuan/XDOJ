@@ -37,7 +37,8 @@ class Problem(models.Model):
     difficulty = models.IntegerField('难度', choices=Difficulty.choices)
     # ["c++", "java", "python"]
     languages = JSONField(verbose_name='编程语言')
-    tag = models.ForeignKey(to=ProblemTag, verbose_name='标签', on_delete=models.CASCADE, blank=True, null=True)
+    tags = models.ManyToManyField(to=ProblemTag, verbose_name='标签', related_name='problems',
+                                  db_table='problem_tag_problem', blank=True, null=True)
 
     is_public = models.BooleanField('是否公开', default=True)
     visible = models.BooleanField('是否可见', default=True)
@@ -59,11 +60,9 @@ class Problem(models.Model):
 
     class Meta:
         db_table = 'problem'
+        ordering = ['id', 'difficulty']
         verbose_name = '题目'
         verbose_name_plural = '题目'
 
     def __str__(self):
         return '[%04d] %s' % (self.id, self.title)
-
-
-

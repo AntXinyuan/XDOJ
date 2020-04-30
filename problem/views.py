@@ -1,6 +1,25 @@
 from rest_framework import viewsets, permissions
-from problem.models import Problem
-from problem.serializers import ProblemAdminSerializer, ProblemListSerializer, ProblemSerializer
+from rest_framework.response import Response
+
+from problem.models import Problem, ProblemTag
+from problem.serializers import ProblemAdminSerializer, ProblemListSerializer, ProblemDetailSerializer, \
+    ProblemTagSerializer, ProblemTagDetailSerializer
+
+
+class ProblemTagAdminAPI(viewsets.ModelViewSet):
+    queryset = ProblemTag.objects.all()
+    serializer_class = ProblemTagSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class ProblemTagAPI(viewsets.ReadOnlyModelViewSet):
+    queryset = ProblemTag.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ProblemTagSerializer
+        else:
+            return ProblemTagDetailSerializer
 
 
 class ProblemAdminAPI(viewsets.ModelViewSet):
@@ -19,4 +38,28 @@ class ProblemAPI(viewsets.ReadOnlyModelViewSet):
         if self.action == 'list':
             return ProblemListSerializer
         else:
-            return ProblemSerializer
+            return ProblemDetailSerializer
+
+    def list(self, request, *args, **kwargs):
+        problems = ProblemAPI.queryset
+
+        keyword = request.GET.get('keyword')
+        tag_name = request.GET.get('tag')
+        difficulty = request.GET.get('difficulty')
+        if keyword:
+            problems = problems.filter(title__contains=keyword)
+        if tag_name:
+            problems = problems.filter(tags__name=tag_name)
+        if difficulty:
+            problems = problems.filter(difficulty=difficulty)
+
+        page = self.paginate_queryset(problems)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(problems, many=True)
+        return Response(serializer.data)
+
+
+

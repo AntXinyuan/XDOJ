@@ -41,7 +41,6 @@ class RegisterConfirmAPI(generics.GenericAPIView):
             return JsonResponse(utils.response_dict(detail='感谢确认，请使用账户登录！'))
 
 
-
 class LoginAPI(generics.GenericAPIView):
     def put(self, request):
         if request.user.is_authenticated:
@@ -79,5 +78,3 @@ class ChangePasswordAPI(generics.GenericAPIView):
             return JsonResponse(utils.response_dict(message="密码修改成功！"))
         else:
             return JsonResponse(utils.response_dict(message='旧密码错误，请重新输入！'))
-
-
