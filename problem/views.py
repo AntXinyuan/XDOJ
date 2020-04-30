@@ -1,6 +1,11 @@
-from rest_framework import viewsets, permissions
+import random
+
+from django.shortcuts import redirect
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from XDOJ import utils
 from problem.models import Problem, ProblemTag
 from problem.serializers import ProblemAdminSerializer, ProblemListSerializer, ProblemDetailSerializer, \
     ProblemTagSerializer, ProblemTagDetailSerializer
@@ -61,5 +66,14 @@ class ProblemAPI(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(problems, many=True)
         return Response(serializer.data)
 
+    @action(methods=['get'], detail=False)
+    def pick_one(self, request):
+        problems = self.queryset
+        count = problems.count()
+        if count:
+            pk = problems[random.randint(0, count - 1)].id
+            return redirect(to='problem-detail', pk=pk)
+        else:
+            return Response(utils.response_dict(detail='题库中没有可选题目！'), status=status.HTTP_404_NOT_FOUND)
 
 
