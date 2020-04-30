@@ -5,6 +5,8 @@ from django.db import models
 import account
 from django.utils.translation import gettext_lazy as _
 
+from XDOJ.utils import rand_str
+
 
 class Role(models.TextChoices):
     ADMIN = 'Admin', _('管理员')
@@ -54,8 +56,7 @@ class User(AbstractUser):
         return self.is_staff or self.role == Role.ORDINARY
 
     def make_confirm_string(self):
-        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        code = make_password(self.username, salt=now)
+        code = rand_str()
         account.models.ConfirmString.objects.create(code=code, user=self)
         return code
 

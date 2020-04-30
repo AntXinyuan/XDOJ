@@ -45,16 +45,17 @@ class RegisterAPI(generics.CreateAPIView):
 class RegisterConfirmAPI(generics.GenericAPIView):
     def get(self, request):
         code = request.GET['code']
+        print('code=', code)
         confirm = get_object_or_404(queryset=ConfirmString.objects.all(), code=code)
         now = datetime.datetime.now()
         if now > confirm.create_time + datetime.timedelta(settings.CONFIRM_DAYS):
             confirm.user.delete()
-            return JsonResponse(utils.response_dict(detail='您的邮件已经过期！请重新注册!'), status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(utils.get_dict(detail='您的邮件已经过期！请重新注册!'), status=status.HTTP_404_NOT_FOUND)
         else:
             confirm.user.is_confirmed = True
             confirm.user.save()
             confirm.delete()
-            return JsonResponse(utils.response_dict(detail='感谢确认，请使用账户登录！'))
+            return JsonResponse(utils.get_dict(detail='感谢确认，请使用账户登录！'))
 
 
 class LoginAPI(generics.GenericAPIView):
@@ -70,9 +71,9 @@ class LoginAPI(generics.GenericAPIView):
                 serializer = UserSerializer(user)
                 return JsonResponse(serializer.data)
             else:
-                return JsonResponse(utils.response_dict(detail='账户尚未激活！'), status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(utils.get_dict(detail='账户尚未激活！'), status=status.HTTP_400_BAD_REQUEST)
         else:
-            return JsonResponse(utils.response_dict(detail='用户名或密码错误！'), status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(utils.get_dict(detail='用户名或密码错误！'), status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutAPI(generics.GenericAPIView):
@@ -91,6 +92,6 @@ class ChangePasswordAPI(generics.GenericAPIView):
         if user.check_password(old_password):
             user.set_password(new_password)
             user.save()
-            return JsonResponse(utils.response_dict(message="密码修改成功！"))
+            return JsonResponse(utils.get_dict(message="密码修改成功！"))
         else:
-            return JsonResponse(utils.response_dict(message='旧密码错误，请重新输入！'))
+            return JsonResponse(utils.get_dict(message='旧密码错误，请重新输入！'))

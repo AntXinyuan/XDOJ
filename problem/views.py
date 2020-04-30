@@ -76,6 +76,6 @@ class ProblemAPI(viewsets.ReadOnlyModelViewSet):
             pk = problems[random.randint(0, count - 1)].id
             return redirect(to='problem-detail', pk=pk)
         else:
-            return Response(utils.response_dict(detail='题库中没有可选题目！'), status=status.HTTP_404_NOT_FOUND)
+            return Response(utils.get_dict(detail='题库中没有可选题目！'), status=status.HTTP_404_NOT_FOUND)
 
 
