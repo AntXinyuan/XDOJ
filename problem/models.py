@@ -8,7 +8,7 @@ Difficulty = models.IntegerChoices('Difficulty', 'Low Mid High')
 
 class JudgeMode(models.TextChoices):
     standard = 'Stardand', _('标准')
-    cumulative = 'cumulative', _('累加')
+    cumulative = 'Cumulative', _('累加')
 
 
 class ProblemTag(models.Model):

@@ -4,7 +4,8 @@ from problem.models import Problem, ProblemTag
 
 class ProblemAdminSerializer(serializers.ModelSerializer):
     created_by = serializers.ReadOnlyField(source='created_by.username')
-    tags = serializers.SlugRelatedField(slug_field='name', many=True, queryset=ProblemTag.objects.all(), allow_null=True)
+    tags = serializers.SlugRelatedField(slug_field='name', many=True, queryset=ProblemTag.objects.all(),
+                                        allow_null=True)
 
     class Meta:
         model = Problem
@@ -13,10 +14,18 @@ class ProblemAdminSerializer(serializers.ModelSerializer):
 
 class ProblemListSerializer(serializers.HyperlinkedModelSerializer):
     tags = serializers.SlugRelatedField(slug_field='name', many=True, read_only=True)
+    total = serializers.ReadOnlyField(source='submission_number')
+    ac_rate = serializers.SerializerMethodField()
 
     class Meta:
         model = Problem
-        fields = ['url', 'id', 'title', 'difficulty', 'tags']
+        fields = ['url', 'id', 'title', 'difficulty', 'tags', 'total', 'ac_rate']
+
+    def get_ac_rate(self, obj):
+        if obj.accepted_number:
+            return obj.submission_number / obj.accepted_number
+        else:
+            return 0.00
 
 
 class ProblemDetailSerializer(serializers.ModelSerializer):
@@ -25,6 +34,8 @@ class ProblemDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Problem
         exclude = ['is_public', 'visible', 'create_time', 'last_update_time', 'created_by', 'test_case_scores', ]
+
+# =============================================================================
 
 
 class ProblemTagSerializer(serializers.ModelSerializer):
