@@ -8,7 +8,7 @@ from account.models import User
 class UserAdminSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ['url', 'id', 'username', 'password', 'email', 'head_img']
+        fields = ['url', 'id', 'username', 'password', 'email', 'head_img', 'role']
 
 
 class UserSerializer(serializers.ModelSerializer):

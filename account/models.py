@@ -3,10 +3,18 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import account
+from django.utils.translation import gettext_lazy as _
+
+
+class Role(models.TextChoices):
+    ADMIN = 'Admin', _('管理员')
+    ORDINARY = 'Ordinary', _('普通用户')
 
 
 class User(AbstractUser):
+    role = models.TextField(choices=Role.choices, default=Role.ORDINARY)
     head_img = models.ImageField('头像', upload_to='head_img', default='/head_img/default.jpg')
+    create_time = models.DateTimeField("创建时间", auto_now_add=True)
     is_confirmed = models.BooleanField('是否激活', default=False)
 
     class Meta:
@@ -16,6 +24,15 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+    def is_super_admin(self):
+        return self.is_staff
+
+    def is_oj_admin(self):
+        return self.role == Role.ORDINARY
+
+    def is_admin(self):
+        return self.is_staff or self.role == Role.ORDINARY
 
     def make_confirm_string(self):
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
