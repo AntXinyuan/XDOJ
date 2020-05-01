@@ -103,14 +103,18 @@ class ResetPasswordAPI(generics.GenericAPIView):
             data = form.cleaned_data
             reset_password_captcha = Captcha(request)
             form_captcha = data['captcha']
-            if True: #reset_password_captcha.check(form_captcha):
+            if reset_password_captcha.check(form_captcha):
                 try:
                     user = User.objects.get(email=data['email'])
                 except User.DoesNotExist:
                     return ErrorResponse(msg='邮箱有误，对应用户不存在')
-                confirm_code = user.make_confirm_string()
-                send_reset_password_email(to_user=user, reset_code=confirm_code)
-                return SuccessResponse(msg='重置请求成功，请及时查收邮件！')
+                if user.has_reset_password_today():
+                    return ErrorResponse(msg='一天只能重置一次密码！')
+                else:
+                    confirm_code = user.make_confirm_string()
+                    user.record_reset_password_time()
+                    send_reset_password_email(to_user=user, reset_code=confirm_code)
+                    return SuccessResponse(msg='重置请求成功，请及时查收邮件！')
             else:
                 return ErrorResponse(msg='验证码错误！')
         else:

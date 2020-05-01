@@ -36,6 +36,7 @@ class User(AbstractUser):
     role = models.TextField(choices=Role.choices, default=Role.ORDINARY)
     head_img = models.ImageField('头像', upload_to='head_img', default='/head_img/default.jpg')
     create_time = models.DateTimeField("创建时间", auto_now_add=True)
+    last_reset_password_time = models.DateTimeField("上次重置密码时间", auto_now_add=True)
     is_confirmed = models.BooleanField('是否激活', default=False)
 
     objects = MyUserManager()
@@ -61,6 +62,13 @@ class User(AbstractUser):
         code = rand_str()
         account.models.ConfirmString.objects.create(code=code, user=self)
         return code
+
+    def has_reset_password_today(self):
+        return timezone.now() < self.last_reset_password_time + datetime.timedelta(days=1)
+
+    def record_reset_password_time(self):
+        self.last_reset_password_time = timezone.now()
+        self.save()
 
 
 class ConfirmString(models.Model):
