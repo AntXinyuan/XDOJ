@@ -5,6 +5,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from account import perms
 from utils import tools
 from problem.models import Problem, ProblemTag
 from problem.serializers import ProblemAdminSerializer, ProblemListSerializer, ProblemDetailSerializer, \
@@ -14,7 +15,7 @@ from problem.serializers import ProblemAdminSerializer, ProblemListSerializer, P
 class ProblemTagAdminAPI(viewsets.ModelViewSet):
     queryset = ProblemTag.objects.all()
     serializer_class = ProblemTagSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [perms.IsAdminUser]
 
 
 class ProblemTagAPI(viewsets.ReadOnlyModelViewSet):
@@ -32,7 +33,7 @@ class ProblemTagAPI(viewsets.ReadOnlyModelViewSet):
 class ProblemAdminAPI(viewsets.ModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemAdminSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [perms.IsAdminUser]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

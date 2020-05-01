@@ -21,4 +21,3 @@ def send_reset_password_email(to_user, reset_code):
                        link=settings.WEBSITE_BASE_URL + 'account/confirm/reset_password/?code=' + reset_code)
     email_html = render_to_string('reset_password_email.html', context)
     send_email_sync(subject=subject, content=email_html, to=[to_user.email])
-

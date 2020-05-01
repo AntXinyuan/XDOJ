@@ -2,22 +2,12 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework import status, generics, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from account import perms
 from utils.tools import SuccessResponse, ErrorResponse, img2base64
 from account.models import User, ConfirmString, Profile
 from account.serializers import UserAdminSerializer, UserSerializer, ProfileSerializer, RegisterForm, ResetPasswordForm
 from account.utils import send_reset_password_email, send_register_confirm_email
 from utils.captcha import Captcha
-
-
-class IsOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj == request.user
-
-
-class IsUserselfOrReadOnly(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return (request.method in permissions.SAFE_METHODS) or obj.user == request.user
 
 
 class CaptchaAPIView(generics.GenericAPIView):
@@ -29,13 +19,13 @@ class CaptchaAPIView(generics.GenericAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserAdminSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [perms.IsAdminUser]
 
 
 class ProfileAPI(generics.RetrieveUpdateAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [IsUserselfOrReadOnly]
+    permission_classes = [perms.IsBOwnerOrReadOnly]
 
 
 class RegisterAPI(generics.GenericAPIView):
@@ -66,6 +56,7 @@ class LoginAPI(generics.GenericAPIView):
                 login(request, user)
                 serializer = UserSerializer(user)
                 return SuccessResponse(msg=serializer.data)
+                return SuccessResponse(msg='ok')
             else:
                 return ErrorResponse(msg='账户尚未激活！')
         else:
@@ -79,7 +70,7 @@ class LogoutAPI(generics.GenericAPIView):
 
 
 class ChangePasswordAPI(generics.GenericAPIView):
-    permission_classes = [IsOwner]
+    permission_classes = [perms.IsOneself]
 
     def put(self, request):
         old_password = request.data['old_password']

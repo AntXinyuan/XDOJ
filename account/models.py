@@ -1,18 +1,21 @@
 import datetime
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils import timezone
 
 import account
-from django.utils.translation import gettext_lazy as _
 
 from XDOJ import settings
 from utils.tools import rand_str
 
 
 class Role(models.TextChoices):
-    ADMIN = 'Admin', _('管理员')
-    ORDINARY = 'Ordinary', _('普通用户')
+    SUPER_ADMIN = 'SUPER_ADMIN'
+    NORMAL_ADMIN = 'NORMAL_ADMIN'
+    USER = 'USER'
 
 
 class MyUserManager(UserManager):
@@ -23,40 +26,53 @@ class MyUserManager(UserManager):
         Profile.objects.create(user=user)
         return user
 
-    def update(self, **kwargs):
-        user = super().update(**kwargs)
-        if kwargs.get('password', None):
-            raw_password = kwargs['password']
-            user.set_password(raw_password)
-            user.save()
-        return user
+
+class MyPermissionsMixin(models.Model):
+    is_staff = models.BooleanField(default=False)
+    role = models.TextField(choices=Role.choices, default=Role.USER)
+
+    class Meta:
+        abstract = True
+
+    def is_super_admin(self):
+        return self.role == Role.SUPER_ADMIN
+
+    def is_normal_admin(self):
+        return self.role == Role.NORMAL_ADMIN
+
+    def is_admin(self):
+        return self.role == Role.SUPER_ADMIN or self.role == Role.NORMAL_ADMIN
+
+    def has_module_perms(self, app_label):
+        return self.is_super_admin()
+
+    def has_perms(self, perm_list, obj=None):
+        return self.is_super_admin()
+
+    def has_perm(self, perm, obj=None):
+        return self.is_super_admin()
 
 
-class User(AbstractUser):
-    role = models.TextField(choices=Role.choices, default=Role.ORDINARY)
+class User(AbstractBaseUser, MyPermissionsMixin):
+    username = models.TextField(max_length=20, unique=True,
+                                validators=[UnicodeUsernameValidator()],
+                                error_messages={'unique': _("该用户名已存在！")})
+    email = models.EmailField(unique=True)
     head_img = models.ImageField('头像', upload_to='head_img', default='/head_img/default.jpg')
     create_time = models.DateTimeField("创建时间", auto_now_add=True)
     last_reset_password_time = models.DateTimeField("上次重置密码时间", auto_now_add=True)
     is_confirmed = models.BooleanField('是否激活', default=False)
 
     objects = MyUserManager()
+    USERNAME_FIELD = 'username'
 
     class Meta:
-        ordering = ['date_joined']
+        ordering = ['create_time']
         verbose_name = '用户'
         verbose_name_plural = '用户'
 
     def __str__(self):
         return self.username
-
-    def is_super_admin(self):
-        return self.is_staff
-
-    def is_oj_admin(self):
-        return self.role == Role.ORDINARY
-
-    def is_admin(self):
-        return self.is_staff or self.role == Role.ORDINARY
 
     def make_confirm_string(self):
         code = rand_str()

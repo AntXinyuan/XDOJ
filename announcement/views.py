@@ -1,4 +1,6 @@
-from rest_framework import generics, viewsets, permissions
+from rest_framework import generics, viewsets
+
+from account import perms
 from announcement.models import Announcement
 from announcement.serializers import AnnouncementSerializer
 
@@ -6,7 +8,7 @@ from announcement.serializers import AnnouncementSerializer
 class AnnouncementAdminAPI(viewsets.ModelViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [perms.IsAdminUser]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
