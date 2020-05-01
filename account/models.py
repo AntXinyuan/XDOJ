@@ -2,9 +2,12 @@ import datetime
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+from django.utils import timezone
+
 import account
 from django.utils.translation import gettext_lazy as _
 
+from XDOJ import settings
 from XDOJ.utils import rand_str
 
 
@@ -73,6 +76,9 @@ class ConfirmString(models.Model):
         ordering = ["-create_time"]
         verbose_name = "确认码"
         verbose_name_plural = "确认码"
+
+    def is_expired(self):
+        return timezone.now() > self.create_time + datetime.timedelta(minutes=settings.CONFIRM_MINUTES)
 
 
 class Profile(models.Model):

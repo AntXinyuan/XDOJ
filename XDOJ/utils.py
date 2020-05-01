@@ -1,19 +1,25 @@
-import hashlib
 import random
-import threading
-
-from django.contrib.auth.hashers import make_password
 from django.core.mail import EmailMultiAlternatives
-from django.http import JsonResponse
 from django.utils.crypto import get_random_string
 from rest_framework import status
-import datetime
-import account.models
+from rest_framework.response import Response
 from XDOJ import settings
 
 
 def get_dict(**kwargs):
     return kwargs
+
+
+def _ResultResponse(err, msg, http_status):
+    return Response(get_dict(err=err, msg=msg), status=http_status)
+
+
+def SuccessResponse(msg=None, err=None, http_status=status.HTTP_200_OK):
+    return _ResultResponse(err, msg, http_status)
+
+
+def ErrorResponse(msg=None, err='error', http_status=status.HTTP_200_OK):
+    return _ResultResponse(err, msg, http_status)
 
 
 def send_email_sync(subject, content, to, alternatives=None):

@@ -7,12 +7,15 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, generics, permissions, renderers, viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+
+from XDOJ.utils import get_dict, SuccessResponse, ErrorResponse
 from account.models import User, ConfirmString, Profile
 from account.serializers import UserAdminSerializer, UserSerializer, RegisterSerializer, ProfileSerializer
 from XDOJ import utils
+from account.utils import send_reset_password_email
 
 
 class IsOwner(permissions.BasePermission):
@@ -42,22 +45,6 @@ class RegisterAPI(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 
-class RegisterConfirmAPI(generics.GenericAPIView):
-    def get(self, request):
-        code = request.GET['code']
-        print('code=', code)
-        confirm = get_object_or_404(queryset=ConfirmString.objects.all(), code=code)
-        now = datetime.datetime.now()
-        if now > confirm.create_time + datetime.timedelta(settings.CONFIRM_DAYS):
-            confirm.user.delete()
-            return JsonResponse(utils.get_dict(detail='您的邮件已经过期！请重新注册!'), status=status.HTTP_404_NOT_FOUND)
-        else:
-            confirm.user.is_confirmed = True
-            confirm.user.save()
-            confirm.delete()
-            return JsonResponse(utils.get_dict(detail='感谢确认，请使用账户登录！'))
-
-
 class LoginAPI(generics.GenericAPIView):
     def put(self, request):
         # if request.user.is_authenticated:
@@ -69,17 +56,17 @@ class LoginAPI(generics.GenericAPIView):
             if user.is_confirmed:
                 login(request, user)
                 serializer = UserSerializer(user)
-                return JsonResponse(serializer.data)
+                return SuccessResponse(msg=serializer.data)
             else:
-                return JsonResponse(utils.get_dict(detail='账户尚未激活！'), status=status.HTTP_400_BAD_REQUEST)
+                return ErrorResponse(msg='账户尚未激活！')
         else:
-            return JsonResponse(utils.get_dict(detail='用户名或密码错误！'), status=status.HTTP_400_BAD_REQUEST)
+            return ErrorResponse(msg='用户名或密码错误！')
 
 
 class LogoutAPI(generics.GenericAPIView):
     def put(self, request):
         logout(request)
-        return Response(data={'details': '登出成功！'})
+        return SuccessResponse(msg='登出成功！')
 
 
 class ChangePasswordAPI(generics.GenericAPIView):
@@ -92,6 +79,56 @@ class ChangePasswordAPI(generics.GenericAPIView):
         if user.check_password(old_password):
             user.set_password(new_password)
             user.save()
-            return JsonResponse(utils.get_dict(message="密码修改成功！"))
+            return SuccessResponse(msg="密码修改成功！")
         else:
-            return JsonResponse(utils.get_dict(message='旧密码错误，请重新输入！'))
+            return ErrorResponse(msg='旧密码错误，请重新输入！')
+
+
+class ResetPasswordAPI(generics.GenericAPIView):
+    def post(self, request):
+        if request.user.is_authenticated:
+            return ErrorResponse(msg='您已登陆，无需重置密码', http_status=status.HTTP_400_BAD_REQUEST)
+        email = request.data['email']
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return ErrorResponse(msg='邮箱有误，对应用户不存在')
+
+        confirm_code = user.make_confirm_string()
+        send_reset_password_email(to_user=user, reset_code=confirm_code)
+        return SuccessResponse(msg='重置请求成功，请及时查收邮件！')
+
+
+class Confirmviewset(viewsets.GenericViewSet):
+    @action(methods=['POST'], detail=False)
+    def reset_password(self, request):
+        code = request.data['code']
+        try:
+            confirm = ConfirmString.objects.get(code=code)
+        except ConfirmString.DoesNotExist:
+            return ErrorResponse(msg='确认码不存在')
+        if confirm.is_expired():
+            confirm.delete()
+            return ErrorResponse(msg='您的邮件已经过期！请重新注册!')
+        else:
+            new_password = request.data['new_password']
+            confirm.user.set_password(new_password)
+            confirm.user.save()
+            confirm.delete()
+            return SuccessResponse(msg='密码重置成功, 请使用新密码登录！')
+
+    @action(methods=['GET'], detail=False)
+    def register(self, request):
+        code = request.GET['code']
+        try:
+            confirm = ConfirmString.objects.get(code=code)
+        except ConfirmString.DoesNotExist:
+            return ErrorResponse(msg='确认码不存在')
+        if confirm.is_expired():
+            confirm.user.delete()
+            return ErrorResponse(msg='您的邮件已经过期！请重新注册!')
+        else:
+            confirm.user.is_confirmed = True
+            confirm.user.save()
+            confirm.delete()
+            return SuccessResponse(msg='感谢确认，请使用账户登录！')
