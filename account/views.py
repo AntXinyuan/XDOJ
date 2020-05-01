@@ -1,21 +1,13 @@
-import datetime
-from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status, generics, permissions, renderers, viewsets
-from rest_framework.decorators import api_view, action
-from rest_framework.generics import get_object_or_404
+from rest_framework import status, generics, permissions, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from XDOJ.utils import get_dict, SuccessResponse, ErrorResponse
+from utils.tools import SuccessResponse, ErrorResponse, img2base64
 from account.models import User, ConfirmString, Profile
-from account.serializers import UserAdminSerializer, UserSerializer, RegisterSerializer, ProfileSerializer
-from XDOJ import utils
-from account.utils import send_reset_password_email
+from account.serializers import UserAdminSerializer, UserSerializer, ProfileSerializer, RegisterForm, ResetPasswordForm
+from account.utils import send_reset_password_email, send_register_confirm_email
+from utils.captcha import Captcha
 
 
 class IsOwner(permissions.BasePermission):
@@ -26,6 +18,12 @@ class IsOwner(permissions.BasePermission):
 class IsUserselfOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS) or obj.user == request.user
+
+
+class CaptchaAPIView(generics.GenericAPIView):
+    def get(self, request):
+        # TODO DEBUG 发布时应删除err
+        return SuccessResponse(msg=img2base64(Captcha(request).get()), err=Captcha(request).get_answer())
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -40,9 +38,20 @@ class ProfileAPI(generics.RetrieveUpdateAPIView):
     permission_classes = [IsUserselfOrReadOnly]
 
 
-class RegisterAPI(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
+class RegisterAPI(generics.GenericAPIView):
+    def post(self, request):
+        form = RegisterForm(request.data)
+        if form.is_valid():
+            data = form.cleaned_data
+            register_captcha = Captcha(request)
+            form_captcha = data.pop('captcha')
+            if register_captcha.check(form_captcha):
+                user = User.objects.create(**data)
+                send_register_confirm_email(to_user=user, confirm_code=user.make_confirm_string())
+                return SuccessResponse(msg='注册成功，请及时查收激活邮件！')
+            else:
+                return ErrorResponse(msg='验证码错误！')
+        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPI(generics.GenericAPIView):
@@ -88,34 +97,44 @@ class ResetPasswordAPI(generics.GenericAPIView):
     def post(self, request):
         if request.user.is_authenticated:
             return ErrorResponse(msg='您已登陆，无需重置密码', http_status=status.HTTP_400_BAD_REQUEST)
-        email = request.data['email']
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return ErrorResponse(msg='邮箱有误，对应用户不存在')
 
-        confirm_code = user.make_confirm_string()
-        send_reset_password_email(to_user=user, reset_code=confirm_code)
-        return SuccessResponse(msg='重置请求成功，请及时查收邮件！')
+        form = ResetPasswordForm(request.data)
+        if form.is_valid():
+            data = form.cleaned_data
+            reset_password_captcha = Captcha(request)
+            form_captcha = data['captcha']
+            if True: #reset_password_captcha.check(form_captcha):
+                try:
+                    user = User.objects.get(email=data['email'])
+                except User.DoesNotExist:
+                    return ErrorResponse(msg='邮箱有误，对应用户不存在')
+                confirm_code = user.make_confirm_string()
+                send_reset_password_email(to_user=user, reset_code=confirm_code)
+                return SuccessResponse(msg='重置请求成功，请及时查收邮件！')
+            else:
+                return ErrorResponse(msg='验证码错误！')
+        else:
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Confirmviewset(viewsets.GenericViewSet):
-    @action(methods=['POST'], detail=False)
+    @action(methods=['GET'], detail=False)
     def reset_password(self, request):
-        code = request.data['code']
+        code = request.GET['code']
         try:
             confirm = ConfirmString.objects.get(code=code)
         except ConfirmString.DoesNotExist:
-            return ErrorResponse(msg='确认码不存在')
+            return ErrorResponse(msg='确认码无效！')
         if confirm.is_expired():
             confirm.delete()
             return ErrorResponse(msg='您的邮件已经过期！请重新注册!')
         else:
-            new_password = request.data['new_password']
+            # new_password = request.data['new_password']
+            new_password = '1234567'
             confirm.user.set_password(new_password)
             confirm.user.save()
             confirm.delete()
-            return SuccessResponse(msg='密码重置成功, 请使用新密码登录！')
+            return SuccessResponse(msg='密码重置成功, 请使用初始密码登录， 并尽快登录修改！')
 
     @action(methods=['GET'], detail=False)
     def register(self, request):

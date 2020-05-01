@@ -1,4 +1,7 @@
 import random
+from base64 import b64encode
+from io import BytesIO
+
 from django.core.mail import EmailMultiAlternatives
 from django.utils.crypto import get_random_string
 from rest_framework import status
@@ -44,6 +47,15 @@ def rand_str(length=32, mode="str"):
         return random.choice("123456789ABCDEF") + get_random_string(length - 1, allowed_chars="0123456789ABCDEF")
     else:
         return random.choice("123456789") + get_random_string(length - 1, allowed_chars="0123456789")
+
+
+def img2base64(img):
+    with BytesIO() as buf:
+        img.save(buf, "gif")
+        buf_str = buf.getvalue()
+    img_prefix = "data:image/png;base64,"
+    b64_str = img_prefix + b64encode(buf_str).decode("utf-8")
+    return b64_str
 
 
 

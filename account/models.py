@@ -1,5 +1,4 @@
 import datetime
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.utils import timezone
@@ -8,7 +7,7 @@ import account
 from django.utils.translation import gettext_lazy as _
 
 from XDOJ import settings
-from XDOJ.utils import rand_str
+from utils.tools import rand_str
 
 
 class Role(models.TextChoices):
@@ -66,7 +65,7 @@ class User(AbstractUser):
 
 class ConfirmString(models.Model):
     code = models.CharField('激活码', max_length=256)
-    user = models.OneToOneField('User', verbose_name='所属用户', on_delete=models.CASCADE)
+    user = models.ForeignKey(to='User', verbose_name='所属用户', on_delete=models.CASCADE)
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
 
     def __str__(self):

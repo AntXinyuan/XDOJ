@@ -5,7 +5,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from XDOJ import utils
+from utils import tools
 from problem.models import Problem, ProblemTag
 from problem.serializers import ProblemAdminSerializer, ProblemListSerializer, ProblemDetailSerializer, \
     ProblemTagSerializer, ProblemTagDetailSerializer
@@ -76,6 +76,6 @@ class ProblemAPI(viewsets.ReadOnlyModelViewSet):
             pk = problems[random.randint(0, count - 1)].id
             return redirect(to='problem-detail', pk=pk)
         else:
-            return Response(utils.get_dict(detail='题库中没有可选题目！'), status=status.HTTP_404_NOT_FOUND)
+            return Response(tools.get_dict(detail='题库中没有可选题目！'), status=status.HTTP_404_NOT_FOUND)
 
 

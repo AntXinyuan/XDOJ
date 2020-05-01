@@ -6,6 +6,7 @@ router = DefaultRouter()
 router.register('confirm', views.Confirmviewset, basename='confirm')
 
 urlpatterns = [
+    path('captcha/', views.CaptchaAPIView.as_view(), name='captcha'),
     path('profile/<int:pk>/', views.ProfileAPI.as_view(), name='profile-detail'),
     path('login/', views.LoginAPI.as_view()),
     path('logout/', views.LogoutAPI.as_view()),

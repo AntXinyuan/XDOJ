@@ -47,6 +47,7 @@ LOCAL_APPS = [
     'contest',
     'problem',
     'submission',
+    'utils',
 ]
 
 INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS
