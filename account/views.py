@@ -56,7 +56,6 @@ class LoginAPI(generics.GenericAPIView):
                 login(request, user)
                 serializer = UserSerializer(user)
                 return SuccessResponse(msg=serializer.data)
-                return SuccessResponse(msg='ok')
             else:
                 return ErrorResponse(msg='账户尚未激活！')
         else:
