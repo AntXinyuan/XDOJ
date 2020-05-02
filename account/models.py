@@ -26,6 +26,14 @@ class MyUserManager(UserManager):
         Profile.objects.create(user=user)
         return user
 
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('role', Role.SUPER_ADMIN)
+        extra_fields.setdefault('is_confirmed', True)
+        superuser = super()._create_user(username, email, password, **extra_fields)
+        Profile.objects.create(user=superuser)
+        return superuser
+
 
 class MyPermissionsMixin(models.Model):
     is_staff = models.BooleanField(default=False)
@@ -54,7 +62,7 @@ class MyPermissionsMixin(models.Model):
 
 
 class User(AbstractBaseUser, MyPermissionsMixin):
-    username = models.TextField(max_length=20, unique=True,
+    username = models.CharField(max_length=20, unique=True,
                                 validators=[UnicodeUsernameValidator()],
                                 error_messages={'unique': _("该用户名已存在！")})
     email = models.EmailField(unique=True)
@@ -65,6 +73,7 @@ class User(AbstractBaseUser, MyPermissionsMixin):
 
     objects = MyUserManager()
     USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
 
     class Meta:
         ordering = ['create_time']
@@ -117,3 +126,11 @@ class Profile(models.Model):
     class Meta:
         verbose_name = '个人主页'
         verbose_name_plural = '个人主页'
+
+    def increase_accepted_number(self):
+        self.accepted_number += 1
+        self.save()
+
+    def increase_submission_number(self):
+        self.submission_number += 1
+        self.save()
