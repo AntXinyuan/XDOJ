@@ -1,28 +1,29 @@
 import random
+import re
+import time
 from base64 import b64encode
 from io import BytesIO
-
+from django.core.files.storage import FileSystemStorage
 from django.core.mail import EmailMultiAlternatives
 from django.utils.crypto import get_random_string
-from rest_framework import status
-from rest_framework.response import Response
 from XDOJ import settings
+
+
+class ImageStorage(FileSystemStorage):
+    def __init__(self, location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL):
+        super(ImageStorage, self).__init__(location, base_url)
+
+    def _save(self, name, content):
+        import os
+        ext = os.path.splitext(name)[1]
+        _dir = os.path.dirname(name)
+        fn = rand_str(mode='time') + rand_str()
+        name = os.path.join(_dir, fn + ext)
+        return super(ImageStorage, self)._save(name, content)
 
 
 def get_dict(**kwargs):
     return kwargs
-
-
-def _ResultResponse(err, msg, http_status):
-    return Response(get_dict(err=err, msg=msg), status=http_status)
-
-
-def SuccessResponse(msg=None, err=None, http_status=status.HTTP_200_OK):
-    return _ResultResponse(err, msg, http_status)
-
-
-def ErrorResponse(msg=None, err='error', http_status=status.HTTP_200_OK):
-    return _ResultResponse(err, msg, http_status)
 
 
 def send_email_sync(subject, content, to, alternatives=None):
@@ -45,6 +46,8 @@ def rand_str(length=32, mode="str"):
         return get_random_string(length, allowed_chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
     elif mode == "hex_str":
         return random.choice("123456789ABCDEF") + get_random_string(length - 1, allowed_chars="0123456789ABCDEF")
+    elif mode == 'time':
+        return time.strftime('%Y%m%d%H%M%S')
     else:
         return random.choice("123456789") + get_random_string(length - 1, allowed_chars="0123456789")
 
@@ -56,6 +59,14 @@ def img2base64(img):
     img_prefix = "data:image/png;base64,"
     b64_str = img_prefix + b64encode(buf_str).decode("utf-8")
     return b64_str
+
+
+def natural_sort_key(s, _nsre=re.compile(r"(\d+)")):
+    return [int(text) if text.isdigit() else text.lower()
+            for text in re.split(_nsre, s)]
+
+
+
 
 
 

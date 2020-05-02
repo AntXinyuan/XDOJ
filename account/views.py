@@ -3,7 +3,8 @@ from rest_framework import status, generics, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from account import perms
-from utils.tools import SuccessResponse, ErrorResponse, img2base64
+from utils.tools import img2base64
+from utils.responses import SuccessResponse, ErrorResponse
 from account.models import User, ConfirmString, Profile
 from account.serializers import UserAdminSerializer, UserSerializer, ProfileSerializer, RegisterForm, ResetPasswordForm
 from account.utils import send_reset_password_email, send_register_confirm_email

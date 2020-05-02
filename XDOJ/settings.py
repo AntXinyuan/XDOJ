@@ -144,14 +144,20 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, "all_static_files")
 
+DATA_ROOT = os.path.join(BASE_DIR, 'data')
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace("\\", "/")
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(DATA_ROOT, 'media')
+TEST_CASE_ROOT = os.path.join(DATA_ROOT, 'test_case')
+TEMP_ROOT = os.path.join(DATA_ROOT, 'temp/')
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
+
+
 
 AUTH_USER_MODEL = 'account.User'
 

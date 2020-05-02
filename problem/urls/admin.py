@@ -8,5 +8,6 @@ router.register('tag', views.ProblemTagAdminAPI)
 router.register('', views.ProblemAdminAPI)
 
 urlpatterns = [
+    path('test_case/', views.TestCaseAdminAPI.as_view()),
     path('', include(router.urls)),
 ]

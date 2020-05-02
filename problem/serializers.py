@@ -1,3 +1,4 @@
+from django import forms
 from rest_framework import serializers
 from problem.models import Problem, ProblemTag
 
@@ -50,3 +51,7 @@ class ProblemTagDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProblemTag
         fields = ['name', 'problems']
+
+
+class TestCaseUploadForm(forms.Form):
+    file = forms.FileField()

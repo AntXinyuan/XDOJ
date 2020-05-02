@@ -9,7 +9,7 @@ from django.utils import timezone
 import account
 
 from XDOJ import settings
-from utils.tools import rand_str
+from utils.tools import rand_str, ImageStorage
 
 
 class Role(models.TextChoices):
@@ -66,7 +66,7 @@ class User(AbstractBaseUser, MyPermissionsMixin):
                                 validators=[UnicodeUsernameValidator()],
                                 error_messages={'unique': _("该用户名已存在！")})
     email = models.EmailField(unique=True)
-    head_img = models.ImageField('头像', upload_to='head_img', default='/head_img/default.jpg')
+    head_img = models.ImageField('头像', upload_to='head_img', default='/head_img/default.jpg', storage=ImageStorage())
     create_time = models.DateTimeField("创建时间", auto_now_add=True)
     last_reset_password_time = models.DateTimeField("上次重置密码时间", auto_now_add=True)
     is_confirmed = models.BooleanField('是否激活', default=False)
