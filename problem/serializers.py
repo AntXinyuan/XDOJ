@@ -12,6 +12,15 @@ class ProblemAdminSerializer(serializers.ModelSerializer):
         model = Problem
         fields = '__all__'
 
+    def validate_empty_values(self, data):
+        tags = dict(data).get('tags', [])
+        for tag_name in tags:
+            try:
+                tag = ProblemTag.objects.get(name=tag_name)
+            except ProblemTag.DoesNotExist:
+                tag = ProblemTag.objects.create(name=tag_name)
+        return super().validate_empty_values(data)
+
 
 class ProblemListSerializer(serializers.HyperlinkedModelSerializer):
     tags = serializers.SlugRelatedField(slug_field='name', many=True, read_only=True)

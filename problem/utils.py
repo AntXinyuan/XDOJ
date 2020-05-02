@@ -19,7 +19,7 @@ def process_zip(uploaded_zip_file, spj=None, dir=''):
     try:
         zip_file = zipfile.ZipFile(uploaded_zip_file, "r")
     except zipfile.BadZipFile:
-        raise ZipException("Bad zip file")
+        raise ZipException("文件不是有效的压缩包！")
     name_list = zip_file.namelist()
     test_case_list = filter_name_list(name_list, spj=spj, dir=dir)
     if not test_case_list:

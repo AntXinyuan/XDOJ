@@ -1,11 +1,9 @@
 import os
 import random
-
 from django.shortcuts import redirect
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
 from XDOJ import settings
 from account import perms
 from problem.utils import process_zip, ZipException

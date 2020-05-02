@@ -65,8 +65,3 @@ def natural_sort_key(s, _nsre=re.compile(r"(\d+)")):
     return [int(text) if text.isdigit() else text.lower()
             for text in re.split(_nsre, s)]
 
-
-
-
-
-
