@@ -12,7 +12,7 @@ class JudgeMode(models.TextChoices):
 
 
 class ProblemTag(models.Model):
-    name = models.TextField()
+    name = models.TextField(db_index=True)
 
     class Meta:
         db_table = "problem_tag"

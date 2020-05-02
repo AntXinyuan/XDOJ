@@ -62,10 +62,10 @@ class MyPermissionsMixin(models.Model):
 
 
 class User(AbstractBaseUser, MyPermissionsMixin):
-    username = models.CharField(max_length=20, unique=True,
+    username = models.CharField(max_length=20, unique=True, db_index=True,
                                 validators=[UnicodeUsernameValidator()],
                                 error_messages={'unique': _("该用户名已存在！")})
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, db_index=True)
     head_img = models.ImageField('头像', upload_to='head_img', default='/head_img/default.jpg', storage=ImageStorage())
     create_time = models.DateTimeField("创建时间", auto_now_add=True)
     last_reset_password_time = models.DateTimeField("上次重置密码时间", auto_now_add=True)
@@ -97,7 +97,7 @@ class User(AbstractBaseUser, MyPermissionsMixin):
 
 
 class ConfirmString(models.Model):
-    code = models.CharField('激活码', max_length=256)
+    code = models.CharField('激活码', max_length=256, db_index=True)
     user = models.ForeignKey(to='User', verbose_name='所属用户', on_delete=models.CASCADE)
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
 
