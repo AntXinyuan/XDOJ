@@ -12,7 +12,7 @@ class JudgeMode(models.TextChoices):
 
 
 class ProblemTag(models.Model):
-    name = models.TextField(db_index=True)
+    name = models.CharField(max_length=10, db_index=True)
 
     class Meta:
         db_table = "problem_tag"
@@ -24,11 +24,11 @@ class ProblemTag(models.Model):
 
 
 class Problem(models.Model):
-    title = models.TextField('标题')
-    description = models.TextField('问题描述')
-    input_description = models.TextField('输入描述')
-    output_description = models.TextField('输出描述')
-    hint = models.TextField('提示', default='')
+    title = models.CharField('标题', max_length=32)
+    description = models.TextField('问题描述', max_length=512)
+    input_description = models.TextField('输入描述', max_length=512)
+    output_description = models.TextField('输出描述', max_length=512)
+    hint = models.TextField('样例说明', max_length=512, default='')
     # [{input: "test", output: "123"}, {input: "test123", output: "456"}]
     samples = JSONField(verbose_name='测试样例')
 

@@ -115,11 +115,11 @@ class ConfirmString(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(to=User, related_name='profile', on_delete=models.CASCADE)
-    real_name = models.TextField(null=True)
+    real_name = models.CharField(max_length=10, null=True)
     blog = models.URLField(null=True)
     github = models.URLField(null=True)
-    school = models.TextField(null=True)
-    major = models.TextField(null=True)
+    school = models.CharField(max_length=20, null=True)
+    major = models.CharField(max_length=20, null=True)
     accepted_number = models.IntegerField(default=0)
     submission_number = models.IntegerField(default=0)
 
