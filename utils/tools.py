@@ -65,3 +65,15 @@ def natural_sort_key(s, _nsre=re.compile(r"(\d+)")):
     return [int(text) if text.isdigit() else text.lower()
             for text in re.split(_nsre, s)]
 
+
+def str2bool(value):
+    if value is None:
+        return None
+    else:
+        _value = str.lower(value)
+        if _value == 'true':
+            return True
+        elif _value == 'false':
+            return False
+        else:
+            return None

@@ -25,6 +25,7 @@ urlpatterns = [
     path('account/', include('account.urls.user')),
     path('announcement/', include('announcement.urls.user')),
     path('problem/', include('problem.urls.user')),
+    path('submission/', include('submission.urls.user')),
     url(r'media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT})
 ]
 

@@ -48,6 +48,7 @@ class Problem(models.Model):
     last_update_time = models.DateTimeField('上次修改时间', auto_now=True)
     created_by = models.ForeignKey(to=User, verbose_name='创建者', on_delete=models.CASCADE)
 
+    test_case_id = models.CharField(max_length=64, null=False, default='YDh00z6bz61Vp4qml9JvZBn5wWIP4Gid')
     # [{"input_name": "1.in", "output_name": "1.out", "score": 0}]
     test_case_scores = JSONField(verbose_name='测试点')
     judge_mode = models.TextField('评判模式', choices=JudgeMode.choices, default=JudgeMode.standard)
