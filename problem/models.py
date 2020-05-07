@@ -1,9 +1,10 @@
-from jsonfield import JSONField
+from django_mysql.models import JSONField
 from django.db import models
 from account.models import User
 from django.utils.translation import gettext_lazy as _
 from judger.judger import JudgeStatus
 
+# 因为jsonField的默认值只能为不可变量,所以初始化的工作放到了views.py中进行！！！
 init_statistic_info = JudgeStatus.count_dict()
 Difficulty = models.IntegerChoices('Difficulty', 'Low Mid High')
 
@@ -59,7 +60,7 @@ class Problem(models.Model):
     submission_number = models.BigIntegerField('提交数', default=0)
     accepted_number = models.BigIntegerField('通过数', default=0)
     # {JudgeStatus.ACCEPTED: 3, JudgeStaus.WRONG_ANSWER: 11}
-    statistic_info = JSONField(verbose_name='统计信息', default=init_statistic_info)
+    statistic_info = JSONField(verbose_name='统计信息', default=dict)
 
     class Meta:
         db_table = 'problem'

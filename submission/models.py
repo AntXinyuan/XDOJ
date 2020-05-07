@@ -1,5 +1,5 @@
 from django.db import models
-from jsonfield import JSONField
+from django_mysql.models import JSONField
 from account.models import User
 from judger.judger import JudgeStatus
 from utils.tools import rand_str
@@ -44,9 +44,6 @@ class Submission(models.Model):
 
         problem.submission_number += 1
         user_profile.submission_number += 1
-        print('status=', status)
-        print(type(problem.statistic_info))
-        print(problem.statistic_info)
         if status == JudgeStatus.ACCEPTED:
             problem.accepted_number += 1
             user_profile.accepted_number += 1

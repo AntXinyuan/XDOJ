@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from XDOJ import settings
 from account import perms
+from problem import models
 from problem.utils import process_zip, ZipException
 from utils import tools
 from problem.models import Problem, ProblemTag
@@ -39,7 +40,7 @@ class ProblemAdminAPI(viewsets.ModelViewSet):
     permission_classes = [perms.IsAdminUser]
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(created_by=self.request.user, statistic_info=models.init_statistic_info)
 
 
 class ProblemAPI(viewsets.ReadOnlyModelViewSet):
