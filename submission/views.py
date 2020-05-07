@@ -1,5 +1,7 @@
 from rest_framework import generics, viewsets, mixins, permissions
 from rest_framework.response import Response
+
+from judger.judger import Judger
 from submission.models import Submission, JudgeStatus
 from submission.serializers import SubmissionListSerializer, SubmissionDetailSerializer, SubmissionCreateSerializer, \
     SubmissionUpdateSerializer
@@ -41,7 +43,7 @@ class SubmissionAPI(viewsets.ReadOnlyModelViewSet, mixins.UpdateModelMixin, mixi
     def perform_create(self, serializer):
         submission = serializer.save(user=self.request.user)
         # TODO 待完成：调用评测函数
-        # judge(submission.id)
+        Judger(submission.id).judge_async()
 
     def list(self, request, *args, **kwargs):
         submissions = Submission.objects.all()

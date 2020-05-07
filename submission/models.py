@@ -1,23 +1,25 @@
 from django.db import models
 from jsonfield import JSONField
-
 from account.models import User
 from problem.models import Problem
 from utils.tools import rand_str
 
 
 class JudgeStatus(models.IntegerChoices):
-    COMPILE_ERROR = -2
-    WRONG_ANSWER = -1
-    ACCEPTED = 0
-    CPU_TIME_LIMIT_EXCEEDED = 1
-    REAL_TIME_LIMIT_EXCEEDED = 2
+    WAITING = 0
+    ACCEPTED = 1
+    TIME_LIMIT_EXCEEDED = 2
     MEMORY_LIMIT_EXCEEDED = 3
-    RUNTIME_ERROR = 4
-    SYSTEM_ERROR = 5
-    PENDING = 6
-    JUDGING = 7
-    PARTIALLY_ACCEPTED = 8
+    WRONG_ANSWER = 4
+    RUNTIME_ERROR = 6
+    COMPILE_ERROR = 7
+    PRESENTATION_ERROR = 8
+    SYSTEM_ERROR = 11
+    JUDGING = 12
+
+    @staticmethod
+    def dict():
+        return dict(JudgeStatus.choices)
 
 
 class Submission(models.Model):
@@ -32,13 +34,14 @@ class Submission(models.Model):
     solution = models.TextField()
     is_shared = models.BooleanField(default=False)
 
-    status = models.IntegerField(db_index=True, default=JudgeStatus.PENDING)
-    # {test_case: "1", "detail":""}
-    error_info = JSONField(default=dict)
+    # status = models.IntField(max_length=20, db_index=True)
+    status = models.IntegerField(choices=JudgeStatus.choices, default=JudgeStatus.WAITING,  db_index=True)
+    error_info = models.TextField(max_length=1024, default='')
     # {time_cost: "", memory_cost: "", score: 0}
     statistic_info = JSONField(default=dict)
 
     class Meta:
+        db_table = 'submission'
         ordering = ['-create_time']
         verbose_name = '提交'
         verbose_name_plural = '提交'

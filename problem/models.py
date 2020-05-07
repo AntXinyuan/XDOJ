@@ -67,3 +67,4 @@ class Problem(models.Model):
 
     def __str__(self):
         return '[%04d] %s' % (self.id, self.title)
+
