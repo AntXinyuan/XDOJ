@@ -1,6 +1,7 @@
 from django import forms
 from rest_framework import serializers
-from submission.models import Submission, JudgeStatus
+from submission.models import Submission
+from judger.judger import JudgeStatus
 
 
 class SubmissionListSerializer(serializers.HyperlinkedModelSerializer):
@@ -34,7 +35,7 @@ class SubmissionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Submission
-        exclude = ['status', 'statistic_info', 'error_info']
+        exclude = ['statistic_info', 'error_info']
 
 
 class SubmissionUpdateSerializer(serializers.ModelSerializer):

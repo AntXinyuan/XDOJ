@@ -1,11 +1,11 @@
 from rest_framework import generics, viewsets, mixins, permissions
 from rest_framework.response import Response
 
-from judger.judger import Judger
-from submission.models import Submission, JudgeStatus
+from judger.judger import Judger, JudgeStatus
+from submission.models import Submission
 from submission.serializers import SubmissionListSerializer, SubmissionDetailSerializer, SubmissionCreateSerializer, \
     SubmissionUpdateSerializer
-from utils.tools import str2bool
+from utils.tools import str2bool, get_dict
 
 
 def judge(submission):
@@ -42,8 +42,11 @@ class SubmissionAPI(viewsets.ReadOnlyModelViewSet, mixins.UpdateModelMixin, mixi
 
     def perform_create(self, serializer):
         submission = serializer.save(user=self.request.user)
-        # TODO 待完成：调用评测函数
-        Judger(submission.id).judge_async()
+        # TODO 已完成：调用评测函数
+        Judger(submission_id=submission.id,
+               on_finished=Submission.update_all_statistic_info,
+               args=get_dict(id=submission.id))\
+            .judge_async()
 
     def list(self, request, *args, **kwargs):
         submissions = Submission.objects.all()

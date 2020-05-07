@@ -1,25 +1,9 @@
 from django.db import models
 from jsonfield import JSONField
 from account.models import User
-from problem.models import Problem
+from judger.judger import JudgeStatus
 from utils.tools import rand_str
-
-
-class JudgeStatus(models.IntegerChoices):
-    WAITING = 0
-    ACCEPTED = 1
-    TIME_LIMIT_EXCEEDED = 2
-    MEMORY_LIMIT_EXCEEDED = 3
-    WRONG_ANSWER = 4
-    RUNTIME_ERROR = 6
-    COMPILE_ERROR = 7
-    PRESENTATION_ERROR = 8
-    SYSTEM_ERROR = 11
-    JUDGING = 12
-
-    @staticmethod
-    def dict():
-        return dict(JudgeStatus.choices)
+from problem.models import Problem
 
 
 class Submission(models.Model):
@@ -35,7 +19,7 @@ class Submission(models.Model):
     is_shared = models.BooleanField(default=False)
 
     # status = models.IntField(max_length=20, db_index=True)
-    status = models.IntegerField(choices=JudgeStatus.choices, default=JudgeStatus.WAITING,  db_index=True)
+    status = models.IntegerField(choices=JudgeStatus.choices, default=JudgeStatus.WAITING, db_index=True)
     error_info = models.TextField(max_length=1024, default='')
     # {time_cost: "", memory_cost: "", score: 0}
     statistic_info = JSONField(default=dict)
@@ -49,3 +33,28 @@ class Submission(models.Model):
     def is_really_shared(self):
         return self.problem.share_submission and self.is_shared
 
+    @staticmethod
+    def update_all_statistic_info(id):
+        submission = Submission.objects.get(id=id)
+        problem = submission.problem
+        user_profile = submission.user.profile
+
+        status = submission.status
+        status_dict = JudgeStatus.dict()
+
+        problem.submission_number += 1
+        user_profile.submission_number += 1
+        print('status=', status)
+        print(type(problem.statistic_info))
+        print(problem.statistic_info)
+        if status == JudgeStatus.ACCEPTED:
+            problem.accepted_number += 1
+            user_profile.accepted_number += 1
+            problem.statistic_info[status_dict[submission.status]] += 1
+        elif status == JudgeStatus.WAITING or status == JudgeStatus.JUDGING:
+            pass
+        else:
+            problem.statistic_info[status_dict[submission.status]] += 1
+
+        problem.save()
+        user_profile.save()

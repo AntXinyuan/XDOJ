@@ -126,11 +126,3 @@ class Profile(models.Model):
     class Meta:
         verbose_name = '个人主页'
         verbose_name_plural = '个人主页'
-
-    def increase_accepted_number(self):
-        self.accepted_number += 1
-        self.save()
-
-    def increase_submission_number(self):
-        self.submission_number += 1
-        self.save()

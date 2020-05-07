@@ -1,5 +1,6 @@
 import logging
 import threading
+from django.db import models
 from judger.get_task import get_task
 from judger.worker import worker
 
@@ -25,3 +26,27 @@ class Judger(threading.Thread):
 
     def judge_async(self):
         self.start()
+
+    def judge_sync(self):
+        self.run()
+
+
+class JudgeStatus(models.IntegerChoices):
+    WAITING = 0
+    ACCEPTED = 1
+    TIME_LIMIT_EXCEEDED = 2
+    MEMORY_LIMIT_EXCEEDED = 3
+    WRONG_ANSWER = 4
+    RUNTIME_ERROR = 6
+    COMPILE_ERROR = 7
+    PRESENTATION_ERROR = 8
+    SYSTEM_ERROR = 11
+    JUDGING = 12
+
+    @staticmethod
+    def dict():
+        return dict(JudgeStatus.choices)
+
+    @staticmethod
+    def count_dict():
+        return {k: 0 for k in JudgeStatus.labels}

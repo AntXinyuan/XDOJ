@@ -2,7 +2,9 @@ from jsonfield import JSONField
 from django.db import models
 from account.models import User
 from django.utils.translation import gettext_lazy as _
+from judger.judger import JudgeStatus
 
+init_statistic_info = JudgeStatus.count_dict()
 Difficulty = models.IntegerChoices('Difficulty', 'Low Mid High')
 
 
@@ -32,8 +34,8 @@ class Problem(models.Model):
     # [{input: "test", output: "123"}, {input: "test123", output: "456"}]
     samples = JSONField(verbose_name='测试样例')
 
-    time_limit = models.IntegerField('时间限制', help_text='ms')
-    memory_limit = models.IntegerField('内存限制', help_text='MB')
+    time_limit = models.IntegerField('时间限制', help_text='ms', default=1000)
+    memory_limit = models.IntegerField('内存限制', help_text='KB', default=65536)
     difficulty = models.IntegerField('难度', choices=Difficulty.choices)
     # ["c++", "java", "python"]
     languages = JSONField(verbose_name='编程语言')
@@ -52,12 +54,12 @@ class Problem(models.Model):
     # [{"input_name": "1.in", "output_name": "1.out", "score": 0}]
     test_case_scores = JSONField(verbose_name='测试点')
     judge_mode = models.TextField('评判模式', choices=JudgeMode.choices, default=JudgeMode.standard)
-    total_score = models.IntegerField('总分', default=0)
+    total_score = models.IntegerField('总分', default=100)
 
     submission_number = models.BigIntegerField('提交数', default=0)
     accepted_number = models.BigIntegerField('通过数', default=0)
     # {JudgeStatus.ACCEPTED: 3, JudgeStaus.WRONG_ANSWER: 11}
-    statistic_info = JSONField(verbose_name='统计信息')
+    statistic_info = JSONField(verbose_name='统计信息', default=init_statistic_info)
 
     class Meta:
         db_table = 'problem'
