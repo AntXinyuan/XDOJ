@@ -1,1 +1,1 @@
-from ._lorun_cext import run, check
+from ._lorun_ext import run, check

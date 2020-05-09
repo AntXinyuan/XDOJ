@@ -8,11 +8,12 @@ mkdir data/temp
 mkdir data/test_case
 
 # 创建虚拟环境
-python -m venv venv
+sudo apt-get install python3-venv
+python3.6 -m venv venv
 
 # 安装项目依赖
 cd ./judger/lorun
-../../venv/bin/python ./setup.py install
+../../venv/bin/python setup.py install
 cd ../..
 venv/bin/pip install -r requirements.txt
 
