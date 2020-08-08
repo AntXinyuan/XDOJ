@@ -40,7 +40,9 @@ class ProblemAdminAPI(viewsets.ModelViewSet):
     permission_classes = [perms.IsAdminUser]
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user, statistic_info=models.init_statistic_info)
+        from account.models import User
+        serializer.save(created_by=User.objects.get(username='admin'),#self.request.user, 
+            statistic_info=models.init_statistic_info)
 
 
 class ProblemAPI(viewsets.ReadOnlyModelViewSet):

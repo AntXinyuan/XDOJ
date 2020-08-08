@@ -16,6 +16,8 @@ def run_sql(sql):
             break
         except:
             logging.error('Cannot connect to database,trying again')
+            logging.error('%s %s %s %s' % (config.db_host, config.db_user, config.db_password,
+                                  config.db_name))
             time.sleep(1)
     cur = con.cursor()
     try:

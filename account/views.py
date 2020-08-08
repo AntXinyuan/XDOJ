@@ -36,7 +36,7 @@ class RegisterAPI(generics.GenericAPIView):
             data = form.cleaned_data
             register_captcha = Captcha(request)
             form_captcha = data.pop('captcha')
-            if register_captcha.check(form_captcha):
+            if True: #register_captcha.check(form_captcha):
                 user = User.objects.create(**data)
                 send_register_confirm_email(to_user=user, confirm_code=user.make_confirm_string())
                 return SuccessResponse(msg='注册成功，请及时查收激活邮件！')
@@ -146,3 +146,10 @@ class Confirmviewset(viewsets.GenericViewSet):
             confirm.user.save()
             confirm.delete()
             return SuccessResponse(msg='感谢确认，请使用账户登录！')
+        
+class SendEmailView(generics.GenericAPIView):
+    def get(self, request):
+        from utils.tools import get_dict, send_email_sync, send_email_async
+        email = request.GET['email']
+        send_email_sync(subject='测试', content='测试测试', to=[email])
+        return SuccessResponse()

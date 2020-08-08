@@ -1,6 +1,7 @@
 import random
 import re
 import time
+import threading
 from base64 import b64encode
 from io import BytesIO
 from django.core.files.storage import FileSystemStorage
@@ -32,6 +33,8 @@ def send_email_sync(subject, content, to, alternatives=None):
     msg.attach_alternative(content, "text/html")
     msg.send()
 
+def send_email_async(subject, content, to, alternatives=None):
+    threading.Thread(target=send_email_sync, args=(subject, content, to, alternatives)).start()
 
 def rand_str(length=32, mode="str"):
     """

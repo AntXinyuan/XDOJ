@@ -11,7 +11,8 @@ class AnnouncementAdminAPI(viewsets.ModelViewSet):
     permission_classes = [perms.IsAdminUser]
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        from account.models import User
+        serializer.save(created_by=User.objects.get(username='admin'))#self.request.user)
 
 
 class AnnouncementAPI(generics.ListAPIView):

@@ -24,9 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = secret_info.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*',]
 
 # Application definition
 VENDOR_APPS = [
@@ -89,7 +89,7 @@ DATABASES = {
         'NAME': 'xdoj',
         'USER': 'root',
         'PASSWORD': 'mysql',
-        'HOST': '127.0.0.1',
+        'HOST': 'localhost', # '47.94.88.72', 
         'PORT': '3306',
     }
 }
@@ -150,13 +150,15 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'account.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.163.com'
-EMAIL_PORT = 25
+EMAIL_HOST = 'smtp.126.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
 EMAIL_HOST_USER = secret_info.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = secret_info.EMAIL_HOST_PASSWORD
+EMAIL_FROM_NAME = 'XDOJ管理员'
 
 CONFIRM_MINUTES = 3
 WEBSITE_NAME = 'XDOJ编程训练平台'
-WEBSITE_BASE_URL = 'http://127.0.0.1:8000/'
+WEBSITE_BASE_URL = 'http://47.94.88.72:8000/'
 
 JUDGER_THREAD_COUNT = 4

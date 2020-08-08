@@ -3,3 +3,4 @@
 /data/
 /venv/
 /logging.log
+/*/__pycache__/*

@@ -6,7 +6,8 @@ import threading
 
 def low_level():
     try:
-        os.setuid(int(os.popen("id -u %s" % "nobody").read()))
+        pass
+        #os.setuid(int(os.popen("id -u %s" % "nobody").read()))
     except:
         pass
 
