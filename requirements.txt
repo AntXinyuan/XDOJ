@@ -4,7 +4,7 @@ django-mysql==3.5.0
 djangorestframework==3.11.0
 lorun==1.0.1
 mysqlclient==1.4.6
-Pillow==7.1.2
+Pillow==9.0.1
 PyMySQL==0.9.3
 pytz==2020.1
 sqlparse==0.3.1
